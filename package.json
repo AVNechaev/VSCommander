@@ -1,0 +1,65 @@
+{
+  "name": "vscommander",
+  "displayName": "VSCommander",
+  "description": "Two-panel, keyboard-driven file navigator in the spirit of Midnight Commander. Browse the filesystem flat, one directory per panel, and open files in VS Code tabs.",
+  "version": "0.1.0",
+  "publisher": "local",
+  "private": true,
+  "license": "UNLICENSED",
+  "type": "module",
+  "engines": {
+    "vscode": "^1.100.0"
+  },
+  "categories": [
+    "Other"
+  ],
+  "extensionKind": [
+    "workspace"
+  ],
+  "capabilities": {
+    "virtualWorkspaces": false,
+    "untrustedWorkspaces": {
+      "supported": true
+    }
+  },
+  "main": "./dist/extension.cjs",
+  "activationEvents": [
+    "onWebviewPanel:vscommander"
+  ],
+  "contributes": {
+    "commands": [
+      {
+        "command": "vscommander.open",
+        "title": "Open Commander",
+        "category": "VSCommander"
+      },
+      {
+        "command": "vscommander.toggle",
+        "title": "Toggle Commander / Editor",
+        "category": "VSCommander"
+      }
+    ],
+    "keybindings": [
+      {
+        "command": "vscommander.toggle",
+        "key": "ctrl+o",
+        "when": "!terminalFocus"
+      }
+    ]
+  },
+  "scripts": {
+    "build": "node esbuild.mjs",
+    "watch": "node esbuild.mjs --watch",
+    "package:build": "node esbuild.mjs --production",
+    "typecheck": "tsc --noEmit",
+    "test": "node --test \"test/**/*.test.ts\"",
+    "check": "npm run typecheck && npm test && npm run build"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "@types/vscode": "~1.100.0",
+    "@vscode/codicons": "^0.0.36",
+    "esbuild": "^0.28.2",
+    "typescript": "^7.0.2"
+  }
+}

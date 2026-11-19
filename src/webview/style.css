@@ -1,0 +1,152 @@
+/* Native look (ADR 0010): VS Code theme variables, the workbench UI font, Codicons. No hard-coded colours. */
+
+html,
+body {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+}
+
+body {
+  font-family: var(--vscode-font-family);
+  font-size: var(--vscode-font-size);
+  color: var(--vscode-foreground);
+  background: var(--vscode-editor-background);
+  user-select: none;
+}
+
+[hidden] {
+  display: none !important;
+}
+
+#panels {
+  display: flex;
+  height: 100%;
+}
+
+.panel {
+  flex: 1 1 50%;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  border: 1px solid var(--vscode-panel-border, transparent);
+}
+
+.panel.active {
+  border-color: var(--vscode-focusBorder);
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  height: 22px;
+  padding: 0 8px;
+  white-space: nowrap;
+  background: var(--vscode-sideBarSectionHeader-background);
+  color: var(--vscode-sideBarSectionHeader-foreground, var(--vscode-foreground));
+}
+
+.panel:not(.active) .header {
+  color: var(--vscode-descriptionForeground);
+}
+
+.path {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.viewport {
+  flex: 1;
+  position: relative;
+  overflow-x: hidden;
+  overflow-y: auto;
+  outline: none;
+}
+
+.rows {
+  position: absolute;
+  inset: 0 0 auto 0;
+}
+
+.row {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 22px; /* ROW_HEIGHT in main.ts */
+  display: grid;
+  grid-template-columns: 16px minmax(0, 1fr) 8ch 13ch;
+  column-gap: 8px;
+  align-items: center;
+  padding: 0 8px;
+  white-space: nowrap;
+  cursor: default;
+}
+
+.row .codicon {
+  font-size: 16px;
+}
+
+.name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.size,
+.time {
+  overflow: hidden;
+  text-align: right;
+  white-space: pre;
+  font-variant-numeric: tabular-nums;
+  color: var(--vscode-descriptionForeground);
+}
+
+.row:hover:not(.cursor) {
+  background: var(--vscode-list-hoverBackground);
+}
+
+.row.selected .name {
+  color: var(--vscode-list-highlightForeground);
+  font-weight: 600;
+}
+
+.row.broken .name {
+  color: var(--vscode-list-errorForeground, var(--vscode-errorForeground));
+}
+
+.row.cursor {
+  background: var(--vscode-list-inactiveSelectionBackground);
+  color: var(--vscode-list-inactiveSelectionForeground, inherit);
+}
+
+.panel.active .row.cursor {
+  background: var(--vscode-list-activeSelectionBackground);
+  color: var(--vscode-list-activeSelectionForeground);
+  outline: 1px solid var(--vscode-list-focusOutline, transparent);
+  outline-offset: -1px;
+}
+
+.panel.active .row.cursor .size,
+.panel.active .row.cursor .time {
+  color: inherit;
+}
+
+.status {
+  height: 22px;
+  line-height: 22px;
+  padding: 0 8px;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  border-top: 1px solid var(--vscode-panel-border, transparent);
+  color: var(--vscode-descriptionForeground);
+}
+
+.status.error {
+  color: var(--vscode-errorForeground);
+}
+
+.status.search {
+  color: var(--vscode-textLink-foreground);
+}

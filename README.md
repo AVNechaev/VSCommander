@@ -21,6 +21,23 @@ Design decisions live in [`docs/adr/`](docs/adr/), and terms in [`docs/glossary.
 
 `Ctrl+O` isn't available while the integrated terminal has focus; the shell gets it.
 
+## Install locally
+
+VSCommander isn't on the Marketplace. Build a `.vsix` package and install it from the file:
+
+```sh
+npm install
+npm run package                                   # builds dist/ for production and writes vscommander-0.1.0.vsix
+code --install-extension vscommander-0.1.0.vsix   # or: Extensions view → "…" → Install from VSIX…
+```
+
+Reload any open VS Code windows, then press `Ctrl+O`, or run **VSCommander: Open Commander** from the Command Palette.
+
+- **Updating:** bump `version` in `package.json` if you like, run `npm run package` again, and reinstall the new `.vsix`. Installing the same version again overwrites it.
+- **Uninstalling:** `code --uninstall-extension local.vscommander`, or use the Extensions view.
+- **Remote windows (SSH, WSL, Dev Containers):** VSCommander runs on the machine where the workspace lives (ADR 0003), so it has to be installed *there*. In a remote window, use Extensions view → "…" → **Install from VSIX…** (it installs into the remote), or click **Install in SSH: …** next to the locally installed extension.
+- **Keybinding conflicts:** `Ctrl+O` replaces VS Code's *File: Open File…*. To use a different key, rebind **VSCommander: Toggle Commander / Editor** in Keyboard Shortcuts (`Ctrl+K Ctrl+S`).
+
 ## Development
 
 ```sh

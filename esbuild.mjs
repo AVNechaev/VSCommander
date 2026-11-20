@@ -1,6 +1,6 @@
 // Builds the extension host bundle, the webview bundle and stylesheet, and copies Codicons (ADR 0010).
 import * as esbuild from 'esbuild';
-import { cp, mkdir } from 'node:fs/promises';
+import { cp, mkdir, rm } from 'node:fs/promises';
 
 const watch = process.argv.includes('--watch');
 const production = process.argv.includes('--production');
@@ -34,6 +34,8 @@ const configs = [
   },
 ];
 
+// Start clean so a production package never ships stale dev sourcemaps.
+await rm('dist', { recursive: true, force: true });
 await mkdir('dist/codicons', { recursive: true });
 for (const file of ['codicon.css', 'codicon.ttf']) {
   await cp(`node_modules/@vscode/codicons/dist/${file}`, `dist/codicons/${file}`);

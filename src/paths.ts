@@ -58,6 +58,13 @@ export async function resolveInitialState(
   return { active: saved.active, panels: [panels[0], panels[1]] };
 }
 
+/** `state` with the active panel moved to the directory of `file`, cursor on the file (ADR 0012). */
+export function revealInState(state: CommanderState, file: string): CommanderState {
+  const panels: [PanelState, PanelState] = [state.panels[0], state.panels[1]];
+  panels[state.active] = { dir: path.dirname(file), cursorName: path.basename(file) };
+  return { active: state.active, panels };
+}
+
 export function isCommanderState(x: unknown): x is CommanderState {
   const s = x as CommanderState;
   return (

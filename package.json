@@ -39,6 +39,24 @@
         "category": "VSCommander"
       }
     ],
+    "configuration": {
+      "title": "VSCommander",
+      "properties": {
+        "vscommander.layout": {
+          "type": "string",
+          "enum": [
+            "single",
+            "dual"
+          ],
+          "enumDescriptions": [
+            "One panel at full width. The second panel keeps its directory but is hidden.",
+            "Two panels side by side, as in Midnight Commander. Tab switches between them."
+          ],
+          "default": "single",
+          "markdownDescription": "How many panels the commander shows."
+        }
+      }
+    },
     "keybindings": [
       {
         "command": "vscommander.toggle",

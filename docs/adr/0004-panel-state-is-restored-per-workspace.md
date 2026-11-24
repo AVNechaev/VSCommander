@@ -1,6 +1,6 @@
 # 0004. Panel state is restored per workspace, falling back to root + home
 
-**Status:** Accepted
+**Status:** Accepted, amended by ADR 0012 (coming from a file moves the active panel to it)
 **Date:** 2026-11-12
 
 ## Context

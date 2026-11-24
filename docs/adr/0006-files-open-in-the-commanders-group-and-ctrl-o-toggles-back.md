@@ -1,6 +1,6 @@
 # 0006. Files open in the commander's editor group; Ctrl+O toggles between commander and editor
 
-**Status:** Accepted
+**Status:** Accepted, amended by ADR 0012 (coming from a file moves the active panel to it) and ADR 0013 (Esc closes the commander)
 **Date:** 2026-11-12
 
 ## Context

@@ -1,6 +1,6 @@
 # 0005. The commander lives in an editor tab (webview panel)
 
-**Status:** Accepted
+**Status:** Accepted, amended by ADR 0014 (one panel by default, two as a setting)
 **Date:** 2026-11-12
 
 ## Context

@@ -43,6 +43,8 @@ interface Panel {
 const container = document.getElementById('panels') as HTMLElement;
 const panels: [Panel, Panel] = [makePanel(0), makePanel(1)];
 let active: PanelIndex = 0;
+/** Single-panel layout (ADR 0014): only the active panel is shown, and Tab doesn't switch. */
+let single = true;
 /** Quick search text; belongs to the active panel and is cleared by any non-typing key. */
 let quickSearch = '';
 
@@ -106,6 +108,7 @@ function schedule(): void {
 function render(): void {
   frame = 0;
   const now = Date.now();
+  container.classList.toggle('single', single);
   for (const p of panels) renderPanel(p, now);
 }
 
@@ -195,12 +198,13 @@ function pageSize(p: Panel): number {
 
 // ---------- actions ----------
 
-function navigate(p: Panel, child: string, focusName?: string): void {
-  if (!p.dir) return;
+/** Load `child` of `dir` (the panel's current directory by default) into the panel. */
+function navigate(p: Panel, child: string, focusName?: string, dir = p.dir): void {
+  if (!dir) return;
   p.req++;
   p.loading = true;
   p.error = '';
-  post({ type: 'navigate', panel: p.index, req: p.req, dir: p.dir, child, focusName });
+  post({ type: 'navigate', panel: p.index, req: p.req, dir, child, focusName });
 }
 
 /** Enter: open the selection, or act on the cursor entry. */
@@ -296,7 +300,8 @@ function handleKey(e: KeyboardEvent): boolean {
       enter(p);
       return true;
     case 'Tab':
-      setActive(active === 0 ? 1 : 0);
+      // Consumed even in single layout, so focus never leaves the commander.
+      if (!single) setActive(active === 0 ? 1 : 0);
       return true;
     case 'Insert':
       quickSearch = '';
@@ -307,8 +312,12 @@ function handleKey(e: KeyboardEvent): boolean {
       preview(p);
       return true;
     case 'Escape':
-      if (!quickSearch) return false;
-      quickSearch = '';
+      // First Esc clears the quick search; otherwise Esc closes the commander and returns to the editor (ADR 0013).
+      if (quickSearch) quickSearch = '';
+      else {
+        saveStateNow();
+        post({ type: 'close' });
+      }
       return true;
     case 'Backspace': {
       if (!quickSearch) return false;
@@ -368,6 +377,7 @@ window.addEventListener('message', (ev: MessageEvent<ToWebview>) => {
   switch (msg.type) {
     case 'init':
       active = msg.state.active;
+      single = msg.single;
       panels.forEach((p, i) => {
         p.dir = msg.state.panels[i].dir;
         navigate(p, '', msg.state.panels[i].cursorName);
@@ -408,6 +418,18 @@ window.addEventListener('message', (ev: MessageEvent<ToWebview>) => {
       p.error = msg.message;
       break;
     }
+    case 'reveal': {
+      // Ctrl+O from a file (ADR 0012): if the file is already listed, just move the cursor; else (re)load its directory.
+      const p = panels[active];
+      quickSearch = '';
+      const index = p.dir === msg.dir && !p.loading ? p.entries.findIndex(e => e.name === msg.name && !(e.kind & KIND_UP)) : -1;
+      if (index >= 0) setCursor(p, index);
+      else navigate(p, '', msg.name, msg.dir);
+      break;
+    }
+    case 'layout':
+      single = msg.single;
+      break;
     case 'focus':
       focusActive();
       break;

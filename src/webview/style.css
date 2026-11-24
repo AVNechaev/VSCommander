@@ -33,6 +33,11 @@ body {
   border: 1px solid var(--vscode-panel-border, transparent);
 }
 
+/* Single layout (ADR 0014): the active panel takes the full width. */
+#panels.single .panel:not(.active) {
+  display: none;
+}
+
 .panel.active {
   border-color: var(--vscode-focusBorder);
 }

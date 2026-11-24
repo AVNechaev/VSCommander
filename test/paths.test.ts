@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { describeError, hasParent, isCommanderState, nearestExistingDir, resolveInitialState, resolveNavigation } from '../src/paths.ts';
+import { describeError, hasParent, isCommanderState, nearestExistingDir, resolveInitialState, resolveNavigation, revealInState } from '../src/paths.ts';
 import { TimeoutError } from '../src/listing.ts';
 import type { CommanderState } from '../src/protocol.ts';
 
@@ -47,4 +47,12 @@ test('describeError gives short messages', () => {
   assert.equal(describeError(Object.assign(new Error('x'), { code: 'EACCES' }), '/root'), 'Permission denied: /root');
   assert.equal(describeError(Object.assign(new Error('x'), { code: 'ENOENT' }), '/nope'), 'No such directory: /nope');
   assert.equal(describeError(new TimeoutError('timed out after 10 s'), '/mnt/nfs'), '/mnt/nfs: timed out after 10 s');
+});
+
+test('revealInState moves only the active panel to the file, cursor on it (ADR 0012)', () => {
+  const state: CommanderState = { active: 1, panels: [{ dir: '/a', cursorName: 'x' }, { dir: '/b', cursorName: 'y' }] };
+  assert.deepEqual(revealInState(state, '/p/src/main.ts'), {
+    active: 1,
+    panels: [{ dir: '/a', cursorName: 'x' }, { dir: '/p/src', cursorName: 'main.ts' }],
+  });
 });

@@ -1,9 +1,9 @@
-// The commander: one webview editor tab with two panels (ADR 0005), and the Ctrl+O toggle (ADR 0006).
+// The commander: one webview editor tab with two panels (ADR 0005), the Ctrl+O toggle (ADR 0006) and Esc (ADR 0013).
 import * as vscode from 'vscode';
 import * as os from 'node:os';
 import * as path from 'node:path';
 import { readNames, readStats, withTimeout } from './listing.ts';
-import { describeError, hasParent, isCommanderState, resolveInitialState, resolveNavigation } from './paths.ts';
+import { describeError, hasParent, isCommanderState, resolveInitialState, resolveNavigation, revealInState } from './paths.ts';
 import type { CommanderState, FromWebview, PanelIndex, ToWebview } from './protocol.ts';
 
 export const VIEW_TYPE = 'vscommander';
@@ -19,6 +19,8 @@ export class Commander implements vscode.Disposable {
   private loadToken: [object, object] = [{}, {}];
   /** The last editor tab that was not the commander: target of the return half of the toggle. */
   private lastEditor: vscode.Uri | undefined;
+  /** File to reveal once a newly created commander's webview is ready (ADR 0012). */
+  private pendingReveal: string | undefined;
   private readonly disposables: vscode.Disposable[] = [];
 
   constructor(context: vscode.ExtensionContext) {
@@ -26,6 +28,9 @@ export class Commander implements vscode.Disposable {
     this.disposables.push(
       vscode.window.tabGroups.onDidChangeTabs(() => this.trackLastEditor()),
       vscode.window.tabGroups.onDidChangeTabGroups(() => this.trackLastEditor()),
+      vscode.workspace.onDidChangeConfiguration(e => {
+        if (e.affectsConfiguration('vscommander.layout')) this.post({ type: 'layout', single: this.single() });
+      }),
     );
     this.trackLastEditor();
   }
@@ -35,13 +40,19 @@ export class Commander implements vscode.Disposable {
     for (const d of this.disposables) d.dispose();
   }
 
-  /** Reveal and focus the commander, creating it in the active editor group if needed. */
+  /**
+   * Reveal and focus the commander, creating it in the active editor group if needed.
+   * If coming from a file editor, the active panel goes to that file's directory, cursor on the file (ADR 0012).
+   */
   show(): void {
+    const file = this.activeFile();
     if (this.panel) {
       this.panel.reveal(this.panel.viewColumn, false);
+      if (file) this.post({ type: 'reveal', dir: path.dirname(file), name: path.basename(file) });
       this.post({ type: 'focus' });
       return;
     }
+    this.pendingReveal = file;
     // retainContextWhenHidden: every file open hides the commander behind the file's tab (ADR 0006); Ctrl+O must
     // come back instantly with scroll position, selection and quick search intact, not re-list from saved state.
     const panel = vscode.window.createWebviewPanel(
@@ -84,9 +95,13 @@ export class Commander implements vscode.Disposable {
 
   private async onMessage(msg: FromWebview): Promise<void> {
     switch (msg.type) {
-      case 'ready':
-        this.post({ type: 'init', state: await this.initialState() });
+      case 'ready': {
+        const file = this.pendingReveal;
+        this.pendingReveal = undefined;
+        const state = await this.initialState();
+        this.post({ type: 'init', state: file ? revealInState(state, file) : state, single: this.single() });
         break;
+      }
       case 'navigate':
         await this.load(msg.panel, msg.req, msg.dir, msg.child, msg.focusName);
         break;
@@ -96,7 +111,15 @@ export class Commander implements vscode.Disposable {
       case 'state':
         await this.memento().update(STATE_KEY, msg.state);
         break;
+      case 'close':
+        await this.close();
+        break;
     }
+  }
+
+  /** Setting `vscommander.layout` (ADR 0014): anything but `dual` means one panel. */
+  private single(): boolean {
+    return vscode.workspace.getConfiguration('vscommander').get<string>('layout', 'single') !== 'dual';
   }
 
   // ---------- state (ADR 0004) ----------
@@ -152,11 +175,31 @@ export class Commander implements vscode.Disposable {
 
   // ---------- toggle (ADR 0006) ----------
 
+  /** The local file shown in the active editor tab, if any (the modified side for a diff). */
+  private activeFile(): string | undefined {
+    const input = vscode.window.tabGroups.activeTabGroup.activeTab?.input;
+    let uri: vscode.Uri | undefined;
+    if (input instanceof vscode.TabInputText || input instanceof vscode.TabInputCustom || input instanceof vscode.TabInputNotebook) {
+      uri = input.uri;
+    } else if (input instanceof vscode.TabInputTextDiff || input instanceof vscode.TabInputNotebookDiff) {
+      uri = input.modified;
+    }
+    return uri?.scheme === 'file' ? uri.fsPath : undefined;
+  }
+
   private trackLastEditor(): void {
     const input = vscode.window.tabGroups.activeTabGroup.activeTab?.input;
     if (input instanceof vscode.TabInputText || input instanceof vscode.TabInputCustom || input instanceof vscode.TabInputNotebook) {
       this.lastEditor = input.uri;
     }
+  }
+
+  /** Esc (ADR 0013): focus the editor Ctrl+O came from, then close the commander tab. State was saved by the webview. */
+  private async close(): Promise<void> {
+    const panel = this.panel;
+    if (!panel) return;
+    await this.returnToEditor();
+    panel.dispose();
   }
 
   private async returnToEditor(): Promise<void> {

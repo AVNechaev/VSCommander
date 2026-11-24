@@ -8,18 +8,25 @@ Design decisions live in [`docs/adr/`](docs/adr/), and terms in [`docs/glossary.
 
 | Key | Action |
 |---|---|
-| `Ctrl+O` | Toggle between the commander and the last editor (opens the commander if needed) |
+| `Ctrl+O` | Toggle between the commander and the last editor (opens the commander if needed). Coming from a file, the active panel jumps to that file's directory, cursor on the file |
 | `↑` `↓` `PgUp` `PgDn` `Home` `End` | Move the cursor |
 | `Enter` | Directory: go into it (`..` goes up, landing on the directory you left). File: open as a permanent tab. With a selection: open all selected files |
 | `F3` | Open the cursor file as a preview tab |
-| `Tab` | Switch panel |
+| `Tab` | Switch panel (two-panel layout only) |
 | `Insert` / `Ctrl+T` | Select or deselect the cursor file, then move down |
 | typing | Quick search: case-insensitive prefix. Russian layout falls back to the QWERTY key, so `ыкс` finds `src` |
-| `Backspace` / `Esc` | Edit / clear the quick search |
+| `Backspace` | Edit the quick search |
+| `Esc` | Clear the quick search; if there is none, close the commander and return to the editor you came from |
 | `Ctrl+R` | Reload the panel |
 | mouse | Click selects a row; double-click acts like `Enter` |
 
 `Ctrl+O` isn't available while the integrated terminal has focus; the shell gets it.
+
+## Settings
+
+| Setting | Default | |
+|---|---|---|
+| `vscommander.layout` | `single` | `single`: one full-width panel. `dual`: two panels side by side, `Tab` switches |
 
 ## Install locally
 

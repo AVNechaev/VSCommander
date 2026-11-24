@@ -1,16 +1,19 @@
 # Glossary
 
 ### Active panel
-The one panel of the two that currently receives keystrokes. `Tab` makes the other panel active. Not the same as VS Code editor focus: the active panel only matters while the commander itself has focus.
+The one panel of the two that currently receives keystrokes. `Tab` makes the other panel active (in the two-panel layout). Not the same as VS Code editor focus: the active panel only matters while the commander itself has focus.
 
 ### Commander
-The whole extension UI: one VS Code editor tab (a webview) containing the two panels (ADR 0005). "Open the commander" means show or focus that tab.
+The whole extension UI: one VS Code editor tab (a webview) containing the two panels (ADR 0005). By default only the active one is shown (ADR 0014). "Open the commander" means show or focus that tab.
 
 ### Current directory
 The single directory whose contents a panel is listing right now. Each panel has its own.
 
 ### Cursor
 The highlighted entry in a panel's listing, which keyboard actions operate on. Not the same as the editor text cursor, and not the same as panel focus (see *Active panel*).
+
+### Layout
+Setting `vscommander.layout`: `single` (default) shows only the active panel at full width; `dual` shows both side by side (ADR 0014).
 
 ### Listing
 The flat, non-recursive list of entries in a panel's current directory, plus a leading `..` entry for going up. A listing never contains entries from more than one directory level.
@@ -40,4 +43,4 @@ Typing printable characters while a panel has focus moves the cursor to a matchi
 The set of files marked with `Insert` in one panel. In v1 it is used only to open several files at once; later it will be the source for copy/move. Different from the cursor: the cursor is a single entry, while the selection can be empty or contain many entries.
 
 ### Toggle (Ctrl+O)
-Flip focus between the commander tab and the editor that was active before it (ADR 0006). Like MC's `Ctrl+O`, but here it switches tabs rather than revealing a shell.
+Flip focus between the commander tab and the editor that was active before it (ADR 0006). Like MC's `Ctrl+O`, but here it switches tabs rather than revealing a shell. Coming from a file, the active panel goes to that file's directory with the cursor on it (ADR 0012).
